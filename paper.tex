@@ -1,0 +1,764 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noshorthands,es-nodecimaldot,es-tabla]{babel}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage[hidelinks]{hyperref}
+
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta}
+
+\hypersetup{
+  pdftitle={Sobre la complejidad gatuna},
+  pdfauthor={Steve Andy Ildefonso Santos},
+  pdfsubject={Control, persuasion y frontera libre en Felis catus}
+}
+
+\pgfplotsset{
+  revista/.style={
+    width=0.74\linewidth,
+    height=5.2cm,
+    axis lines=left,
+    axis line style={-, gray!70},
+    tick style={gray!70},
+    tick label style={font=\footnotesize},
+    label style={font=\small},
+    every axis plot/.append style={line width=0.9pt},
+    clip=false
+  }
+}
+
+\newcommand{\gatoqed}{%
+  \tikz[baseline=-0.1ex, x=0.95ex, y=0.95ex]{
+    \fill (-0.82,0.25) -- (-0.82,1.2) -- (-0.15,0.72) -- cycle;
+    \fill (0.82,0.25) -- (0.82,1.2) -- (0.15,0.72) -- cycle;
+    \fill (0,0.1) ellipse (0.92 and 0.78);
+    \fill[white] (-0.36,0.22) circle (0.15);
+    \fill[white] (0.36,0.22) circle (0.15);
+  }%
+}
+\renewcommand{\qedsymbol}{\gatoqed}
+
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[section]
+\newtheorem{proposicion}[teorema]{Proposición}
+\newtheorem{corolario}[teorema]{Corolario}
+\newtheorem{conjetura}[teorema]{Conjetura}
+\theoremstyle{definition}
+\newtheorem{definicion}[teorema]{Definición}
+\newtheorem{problema}[teorema]{Problema abierto}
+\theoremstyle{remark}
+\newtheorem{observacion}[teorema]{Observación}
+
+\numberwithin{equation}{section}
+
+\DeclareMathOperator{\hol}{hol}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\cg}{C}
+\newcommand{\calib}{{\ensuremath{^{\ddagger}}}}
+\newcommand{\costo}{\operatorname{costo}}
+\newcommand{\OPT}{\operatorname{OPT}}
+\newcommand{\prob}[1]{\textnormal{\textsc{#1}}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries Sobre la complejidad gatuna:\par}
+  \vspace{0.35em}
+  {\Large Holonomía, persuasión bayesiana, problemas de frontera libre\par
+  y una teoría general del esfuerzo mínimo en \textit{Felis catus}\par}
+  \vspace{1.3em}
+  {\large Steve Andy Ildefonso Santos\par}
+  \vspace{0.4em}
+  {\small Laboratorio Independiente de Felinometría Aplicada\par
+  \texttt{github.com/stiffis}\par}
+  \vspace{0.8em}
+  5 de noviembre de 2026
+\end{center}
+
+\begin{abstract}
+\noindent
+Se suele decir que el gato doméstico es perezoso. Muestro que esta afirmación es un error de modelado: el gato resuelve, con cotas demostrables, varios problemas de optimización que sus cuidadores ni siquiera han notado que están perdiendo.
+(i)~Defino la \emph{complejidad gatuna} de una tarea como la energía mínima de un programa ejecutado sobre un humano, pruebo un teorema de invariancia hasta una constante de amaestramiento, y deduzco que casi ningún antojo es comprimible, lo que explica la mirada fija.
+(ii)~El enderezamiento en caída libre es una holonomía: la rotación neta es el área encerrada en el espacio de formas. Un gato de inercia constante no puede girar, y la desigualdad isoperimétrica da una altura mínima $h_{\min}=2\pi^2 g/(\varepsilon v^2)$.
+(iii)~El maullido es un experimento bayesiano óptimo: un gato que maúlla también saciado con probabilidad $q^\star$ logra comer con probabilidad $\mu_0/\mu^\star$, sin mentir jamás en el sentido técnico. Con $n$ hogares incomunicados, el rendimiento es lineal en $n$; una pizarra en el refrigerador lo acota por $1$.
+(iv)~Pedir la puerta y no cruzarla es el ejercicio racional de una opción real con umbral $x^\star=\beta I/(\beta-1)$. El humano paga el costo de espera, el tiempo esperado de puerta abierta puede ser infinito y, bajo una calibración natural, el gato se queda en el umbral para siempre con probabilidad exactamente $1/\varphi$.
+(v)~Reubicarse tras un parche de sol satisface el teorema del valor marginal, con intervalo óptimo $T^\star=(3cW^2/2Rv^2)^{1/3}$.
+(vi)~Algorítmicamente, el gato es un adversario: si se calla cuando te levantas a las 3\,a.\,m., ninguna política baja de la razón competitiva $2-1/B$, ni siquiera con azar; si se esconde en el último lugar de tu lista, el costo por búsqueda es máximo; y aunque ubicar un gato es lineal, ubicar una colonia es NP-completo.
+Concluyo que el gato no evita el trabajo: lo externaliza.
+\end{abstract}
+
+\section{Introducción}
+
+Muchas especies estudiadas prefieren trabajar por su comida aunque la tengan gratis al lado, fenómeno conocido como \emph{contrafreeloading}. Delgado, Han y Bain~\cite{delgado} ofrecieron a 17 gatos domésticos un rompecabezas de comida y una bandeja servida. Los gatos eligieron mayormente la bandeja. La literatura recibió esto como una anomalía; aquí lo tomo como un axioma.
+
+\medskip
+\noindent\textbf{Axioma 0.} \emph{El gato minimiza su propio esfuerzo sujeto a obtener lo que quiere, y considera al humano parte del entorno.}
+
+\medskip
+La evidencia indirecta es abundante. Los gatos distinguen su nombre de otras palabras~\cite{saito}, de modo que no acudir al llamado no puede atribuirse a un problema de reconocimiento. Insertan en el ronroneo un componente agudo que los humanos perciben como más urgente~\cite{mccomb}. Fluyen hasta ocupar su recipiente~\cite{fardin}, se recuperan antes del estrés cuando disponen de una caja~\cite{vinke}, e incluso se sientan en cuadrados que solo existen como contornos ilusorios~\cite{smith}. Su forma de beber equilibra inercia y gravedad con precisión de orden uno~\cite{reis}.
+
+Mi contribución es reunir estas conductas bajo un mismo principio y dar enunciados que se puedan demostrar. La \S\ref{sec:complejidad} formaliza la complejidad gatuna. Las secciones siguientes tratan la caída (\S\ref{sec:caida}), el maullido (\S\ref{sec:maullido}), la puerta (\S\ref{sec:puerta}) y el sol (\S\ref{sec:sol}). La \S\ref{sec:computacional} analiza al gato como adversario algorítmico. La \S\ref{sec:menores} reúne resultados menores, entre ellos por qué el gato se sienta sobre tu teclado, y la \S\ref{sec:abiertos} enumera problemas abiertos.
+
+\medskip
+\noindent\textbf{Nota de honestidad.} Las demostraciones son correctas dentro de sus modelos. Los modelos son caricaturas. Todo parámetro marcado con \calib\ lo calibré a ojo, sin medirlo, y está ahí solo para producir números. Las afirmaciones empíricas atribuidas a la literatura son reales y están citadas. Los cálculos se pueden reproducir con \texttt{revision\_por\_patas.py}, el programa que acompaña a este trabajo y que hace las veces de revisión por pares; por patas, en este caso. El símbolo que cierra las demostraciones es un gato, por razones que no requieren justificación.
+
+\section{Complejidad gatuna}\label{sec:complejidad}
+
+\begin{definicion}[Sistema gato-humano]\label{def:sistema}
+Sea $\Sigma$ un alfabeto finito de $k\ge 2$ \emph{actos} (maullar, frotarse, mirar fijo, acercar una pata a un vaso) con costo energético $e:\Sigma\to(0,\infty)$, y sea $\mathcal T$ un conjunto de \emph{tareas}. Un \emph{humano} es una función parcial $H:\Sigma^*\to\mathcal T$. La energía de un programa $p=a_1\cdots a_m$ es $E(p)=\sum_i e(a_i)$.
+\end{definicion}
+
+\begin{definicion}[Complejidad gatuna]
+La complejidad gatuna de $T\in\mathcal T$ relativa a $H$ es
+\begin{equation}
+  \cg_H(T)=\inf\{\,E(p) : H(p)=T\,\},
+\end{equation}
+con $\inf\varnothing=\infty$. Digo que $H$ es \emph{amaestrable a} $H'$ si existe $t\in\Sigma^*$ tal que $H(tp)=H'(p)$ para todo $p\in\Sigma^*$. La palabra $t$ se llama \emph{protocolo de amaestramiento}.
+\end{definicion}
+
+La analogía con la complejidad de Kolmogorov~\cite{kolmogorov,livitanyi} es deliberada: el gato escribe programas y el humano los ejecuta.
+
+\begin{teorema}[Invariancia]\label{teo:invariancia}
+Si $H$ es amaestrable a $H'$ mediante $t$, entonces para toda tarea $T$,
+\begin{equation}
+  \cg_H(T)\le \cg_{H'}(T)+E(t).
+\end{equation}
+Si además $H'$ es amaestrable a $H$ mediante $t'$, entonces $|\cg_H(T)-\cg_{H'}(T)|\le\max\{E(t),E(t')\}$ siempre que ambas complejidades sean finitas.
+\end{teorema}
+
+\begin{proof}
+Si $H'(p)=T$, entonces $H(tp)=T$ y $E(tp)=E(t)+E(p)$. Tomo el ínfimo sobre $p$. La segunda parte sigue por simetría.
+\end{proof}
+
+La complejidad gatuna es, pues, una propiedad de la tarea y no de tu familia, salvo por una constante que solo depende de cuán rápido cedan en casa.
+
+\begin{observacion}[Amortización]
+Un humano real tiene memoria: $t$ se paga una vez. Sobre $m$ tareas, el costo de amaestramiento por tarea es $E(t)/m\to 0$. Esto es una inversión de capital, y explica por qué la primera semana del gato en casa parece mucho más ruidosa que las siguientes.
+\end{observacion}
+
+\begin{teorema}[Incompresibilidad de los antojos]\label{teo:incompresible}
+Supóngase $e\equiv 1$ y $|\mathcal T|=k^n$. Para todo humano $H$ y todo entero $0\le c<n$, la fracción de tareas con $\cg_H(T)<n-c$ es a lo sumo
+\begin{equation}
+  \frac{k^{n-c}-1}{(k-1)\,k^{n}}<\frac{k^{-c}}{k-1}.
+\end{equation}
+\end{teorema}
+
+\begin{proof}
+Hay $\sum_{i<n-c}k^i=(k^{n-c}-1)/(k-1)$ palabras de longitud menor que $n-c$, y cada una produce a lo sumo una tarea.
+\end{proof}
+
+Con $k=4$, $n=10$ y $c=2$, el $97.9$\,\% de los antojos exige al menos ocho actos. El humano promedio interpreta esta cota como «no sé qué quiere». El gato la interpreta como que hay que seguir mirando.
+
+\begin{corolario}[Telepatía]
+A lo sumo una tarea tiene complejidad cero: la que $H$ ejecuta ante la palabra vacía, sin que nadie le pida nada. Todo gato busca que esa tarea sea el desayuno.
+\end{corolario}
+
+\begin{teorema}[Código del maullido, Shannon~\cite{shannon}]\label{teo:codigo}
+Si los antojos siguen una distribución $\pi$ y el gato usa un código unívocamente decodificable sobre $k$ actos, su número esperado de actos por antojo es al menos la entropía $\mathcal H_k(\pi)=-\sum_T\pi(T)\log_k\pi(T)$.
+\end{teorema}
+
+La Tabla~\ref{tab:codigo} muestra el caso diádico, donde la cota se alcanza. Un gato con dos fonemas (maullido corto y largo) y esas frecuencias no puede hacerlo mejor que $1.75$ actos por antojo. Noto que el código óptimo le asigna al atún la palabra más corta, en plena conformidad con lo observado en cualquier cocina a la hora de abrir una lata.
+
+\begin{table}[ht]
+\centering
+\caption{Código de Huffman para un repertorio con frecuencias calibradas\calib.}\label{tab:codigo}
+\begin{tabular}{lccc}
+\toprule
+Antojo & $\pi(T)$ & Palabra & Actos \\
+\midrule
+Atún & $1/2$ & \texttt{0} & 1 \\
+Puerta & $1/4$ & \texttt{10} & 2 \\
+Regazo & $1/8$ & \texttt{110} & 3 \\
+Que dejes de hacer lo que haces & $1/8$ & \texttt{111} & 3 \\
+\midrule
+\multicolumn{2}{l}{Longitud esperada $=\mathcal H_2(\pi)$} & & $1.75$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{proposicion}[Inescrutabilidad]\label{prop:noComputable}
+Si las tareas son cadenas binarias, $e\equiv 1$ y $H$ es una máquina universal, entonces $\cg_H$ es la complejidad de Kolmogorov y, en consecuencia, no es computable~\cite{livitanyi}.
+\end{proposicion}
+
+Dicho de otro modo: si tu humano es universal, ningún algoritmo calcula cuán difícil le resulta a tu gato pedirte algo. La pregunta «¿qué es lo que quiere ahora?» no era retórica; era indecidible en su versión cuantitativa.
+
+\section{La caída como holonomía}\label{sec:caida}
+
+Marey~\cite{marey,marey-nature} fotografió en 1894 a un gato cayendo sin rotación inicial y aterrizando de pie, lo que parecía contradecir la conservación del momento angular. Kane y Scher~\cite{kanescher} dieron la explicación dinámica y Montgomery~\cite{montgomery} la reformuló como una holonomía en teoría de gauge. Aquí estudio un modelo abeliano más pobre que admite cotas cerradas.
+
+\begin{definicion}[Gato coaxial]
+Dos cuerpos coaxiales, delantero y trasero, con ángulos $\theta_1,\theta_2$ e inercias $I_1(t),I_2(t)>0$ que el gato controla plegando o estirando las patas. Parte del reposo, y por tanto $I_1\dot\theta_1+I_2\dot\theta_2=0$ durante toda la caída. Su \emph{forma} es $(\psi,\lambda)$, con torsión $\psi=\theta_1-\theta_2$ y reparto de inercia $\lambda=I_2/(I_1+I_2)\in(0,1)$.
+\end{definicion}
+
+\begin{teorema}[La rotación es un área]\label{teo:holonomia}
+En el gato coaxial, $\dot\theta_1=\lambda\dot\psi$ y $\dot\theta_2=(\lambda-1)\dot\psi$. Por tanto, para todo lazo cerrado $\gamma$ en el espacio de formas, ambos cuerpos rotan lo mismo:
+\begin{equation}
+  \Delta\theta=\hol(\gamma)=\oint_\gamma\lambda\,d\psi=\iint_{D}d\lambda\wedge d\psi .
+\end{equation}
+Para un lazo simple, $|\Delta\theta|$ es el área encerrada, y la rotación es positiva cuando $\gamma$ se recorre en sentido horario en el plano $(\psi,\lambda)$.
+\end{teorema}
+
+\begin{proof}
+Las fórmulas dan $I_1\lambda\dot\psi+I_2(\lambda-1)\dot\psi=\dot\psi\,(I_1I_2-I_2I_1)/(I_1+I_2)=0$, y son consistentes con $\dot\theta_1-\dot\theta_2=\dot\psi$. Integrando, $\Delta\theta_1=\oint\lambda\,d\psi$ y $\Delta\theta_2=\oint\lambda\,d\psi-\oint d\psi=\Delta\theta_1$. El resto es el teorema de Stokes.
+\end{proof}
+
+La rotación neta no depende de la velocidad del lazo, solo de su geometría: el gato no «empuja» contra nada. La $1$-forma $\lambda\,d\psi$ es la conexión y $d\lambda\wedge d\psi$ su curvatura.
+
+\begin{corolario}[Un gato rígido se estrella]\label{cor:rigido}
+Si $\lambda$ es constante, $\hol(\gamma)=\lambda\oint d\psi=0$. Con inercia constante, ninguna secuencia de torsiones produce rotación neta. Plegar las patas no es un adorno: es lo que le da dimensión $2$ al espacio de formas.
+\end{corolario}
+
+\begin{corolario}[Torsión mínima]\label{cor:torsion}
+Sea $k>1$ el cociente entre la inercia estirada y la plegada, de modo que $\lambda$ recorre un intervalo de longitud a lo sumo $\Delta\lambda=(k-1)/(k+1)$. Un lazo simple que produzca un giro de $\pi$ requiere una torsión de amplitud
+\begin{equation}
+  \Psi\ge\frac{\pi}{\Delta\lambda}=\pi\,\frac{k+1}{k-1}>\pi.
+\end{equation}
+Ninguna inercia, por favorable que sea, le permite a un gato coaxial darse la vuelta en un solo ciclo con menos de $180^\circ$ de torsión.
+\end{corolario}
+
+\begin{proof}
+Un lazo simple dentro del rectángulo $\Psi\times\Delta\lambda$ encierra área a lo sumo $\Psi\,\Delta\lambda$, y esta debe ser al menos $\pi$.
+\end{proof}
+
+Para fijar el costo del lazo, doto al espacio de formas de la métrica $ds^2=d\psi^2+\varepsilon^{-2}d\lambda^2$, donde $\varepsilon>0$ mide cuánto más cuesta mover las patas que torcer la columna, y acoto la velocidad de forma por $|\dot c|\le v$.
+
+\begin{teorema}[Isoholonomía]\label{teo:isoholonomia}
+Todo lazo $\gamma$ con $|\hol(\gamma)|=\Delta$ tiene longitud $L$ que cumple $L^2\ge 4\pi\Delta/\varepsilon$, y su energía sobre un tiempo $T$ cumple
+\begin{equation}
+  \int_0^T|\dot c|^2\,dt\ge\frac{4\pi\Delta}{\varepsilon T}.
+\end{equation}
+La igualdad se alcanza únicamente con un círculo métrico recorrido a rapidez constante, es decir, con una elipse en las coordenadas $(\psi,\lambda)$.
+\end{teorema}
+
+\begin{proof}
+Con $y=\lambda/\varepsilon$ la métrica es euclidiana y $\Delta=\varepsilon\,|\oint y\,d\psi|$. Para curvas cerradas no necesariamente simples con índice $w$, la desigualdad de Banchoff y Pohl~\cite{banchoffpohl} da $L^2\ge 4\pi\iint w^2\ge 4\pi\left|\iint w\right|=4\pi\Delta/\varepsilon$, pues $w$ es entero. La cota de energía es Cauchy--Schwarz: $L^2\le T\int|\dot c|^2\,dt$. La igualdad exige que $\gamma$ sea un círculo y que $|\dot c|$ sea constante.
+\end{proof}
+
+\begin{corolario}[Altura mínima]\label{cor:altura}
+Con $T=\sqrt{2h/g}$, un gato que da $n$ vueltas circulares para girar $\pi$ necesita
+\begin{equation}
+  h_{\min}(n)=n\,\frac{2\pi^2 g}{\varepsilon v^2}.
+\end{equation}
+Un cuadrado métrico de la misma área gasta un factor $4/\pi$ de energía, es decir, un $27.3$\,\% más que el círculo. Redondear las esquinas sale a cuenta.
+\end{corolario}
+
+\begin{proof}
+Con $n$ vueltas sobre un disco de área $\pi/(n\varepsilon)$, $L=2\pi\sqrt{n/\varepsilon}$. La cota $L\le vT$ da el resultado. Para el cuadrado, $L_\square^2/L_\circ^2=16\,(\pi/\varepsilon)/(4\pi^2/\varepsilon)=4/\pi$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  revista,
+  width=0.8\linewidth,
+  height=5.6cm,
+  xlabel={Torsión $\psi$ (rad)},
+  ylabel={Reparto de inercia $\lambda$},
+  xmin=-3.8, xmax=3.8,
+  ymin=0.1, ymax=0.9,
+  xtick={-3.14159,0,3.14159},
+  xticklabels={$-\pi$,$0$,$\pi$},
+  ytick={0.2,0.5,0.8}
+]
+\addplot[black, dashed] coordinates {(-2.618,0.8) (2.618,0.8) (2.618,0.2) (-2.618,0.2) (-2.618,0.8)};
+\addplot[black, domain=0:360, samples=120] ({-3.3333*cos(x)},{0.5+0.3*sin(x)});
+\draw[-{Stealth[length=2.2mm]}, line width=0.9pt] (axis cs:1.5,0.8) -- (axis cs:1.7,0.8);
+\draw[-{Stealth[length=2.2mm]}, line width=0.9pt] (axis cs:-1.5,0.2) -- (axis cs:-1.7,0.2);
+\draw[-{Stealth[length=2.2mm]}, line width=0.9pt] (axis cs:3.3333,0.51) -- (axis cs:3.3333,0.47);
+\draw[-{Stealth[length=2.2mm]}, line width=0.9pt] (axis cs:-3.3333,0.49) -- (axis cs:-3.3333,0.53);
+\node[font=\footnotesize, anchor=south] at (axis cs:0,0.81) {delantero plegado: el frente gira mucho};
+\node[font=\footnotesize, anchor=north] at (axis cs:0,0.19) {trasero plegado: el trasero gira mucho};
+\node[font=\footnotesize, fill=white, inner sep=1.5pt] at (axis cs:0,0.62) {línea continua (elipse): costo mínimo};
+\node[font=\footnotesize, fill=white, inner sep=1.5pt] at (axis cs:0,0.38) {línea discontinua (rectángulo): menor torsión};
+\end{axis}
+\end{tikzpicture}
+\caption{Dos lazos en el espacio de formas con $k=4$\calib, ambos de área $\pi$. Por el Teorema~\ref{teo:holonomia}, ambos voltean al gato exactamente $180^\circ$.}\label{fig:formas}
+\end{figure}
+
+\begin{observacion}[El modelo se refuta, y eso es lo interesante]
+Tomo $k=4$\calib, así que $\Delta\lambda=0.6$ (Figura~\ref{fig:formas}). El rectángulo exige $\Psi=300^\circ$ de torsión; la elipse, $382^\circ$.\footnote{El semiancho del rectángulo es $\pi/1.2=2.61799\ldots$, que coincide con $\varphi^2=2.61803\ldots$ en cuatro decimales. No significa nada, pero no pude evitar notarlo, y $\varphi$ volverá a aparecer en la \S\ref{sec:puerta} por razones legítimas.} Con una torsión más razonable de $90^\circ$\calib\ harían falta $n=5$ vueltas, que en una caída de $30$\,cm ($T=0.247$\,s) suponen unos $20$\,Hz. Nadie ha reportado un gato cayendo a $20$\,Hz. Concluyo que plegar y girar no basta, y que el gato real tiene que doblarse: es la salida de Kane y Scher, cuyo modelo se dobla sin torcerse, y su holonomía es no abeliana~\cite{kanescher,montgomery}. Mi modelo no describe al gato. Demuestra, en cambio, por qué tiene que ser más listo que mi modelo.
+\end{observacion}
+
+\section{El maullido como experimento bayesiano}\label{sec:maullido}
+
+\begin{definicion}[Juego de la cena]
+El estado del gato es $\omega\in\{\text{hambre},\text{saciedad}\}$, con $\P(\text{hambre})=\mu_0$. El humano gana $b>0$ si alimenta a un gato hambriento y pierde $a>0$ si alimenta a uno saciado, de modo que sirve comida si y solo si su creencia cumple $\mu\ge\mu^\star=a/(a+b)$. El gato solo quiere comer, en todo estado. Antes de la jornada, elige una política de maullido $\pi(\text{maúlla}\mid\omega)$, que el humano conoce por experiencia acumulada.
+\end{definicion}
+
+\begin{teorema}[Maullido óptimo, Kamenica--Gentzkow~\cite{kamenica}]\label{teo:maullido}
+Si $\mu_0<\mu^\star$, la máxima probabilidad de comer es $\mu_0/\mu^\star$, y se alcanza con
+\begin{equation}
+  \pi(\text{maúlla}\mid\text{hambre})=1,
+  \qquad
+  \pi(\text{maúlla}\mid\text{saciedad})=q^\star=\frac{\mu_0\,(1-\mu^\star)}{(1-\mu_0)\,\mu^\star}.
+\end{equation}
+\end{teorema}
+
+\begin{proof}
+\emph{Cota.} Toda política induce una creencia posterior aleatoria $\mu$ con $\E[\mu]=\mu_0$. Por la desigualdad de Markov, $\P(\mu\ge\mu^\star)\le\mu_0/\mu^\star$. \emph{Alcance.} Con la política del enunciado, $\P(\text{maúlla})=\mu_0+(1-\mu_0)q^\star=\mu_0/\mu^\star$, y la regla de Bayes da $\mu_0/(\mu_0/\mu^\star)=\mu^\star$ como creencia tras el maullido. El silencio revela saciedad con certeza y el humano no sirve; el maullido deja al humano justo en la indiferencia y sirve.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  revista,
+  xlabel={Creencia del humano en que hay hambre, $\mu$},
+  ylabel={Probabilidad de comer},
+  xmin=0, xmax=1,
+  ymin=0, ymax=1.08,
+  xtick={0,0.3,0.5,1},
+  xticklabels={$0$,$\mu_0$,$\mu^\star$,$1$},
+  ytick={0,0.3,0.6,1}
+]
+\addplot[black, domain=0:0.5, samples=2] {2*x};
+\addplot[black, domain=0.5:1, samples=2] {1};
+\addplot[gray, dashed] coordinates {(0,0) (0.4985,0)};
+\addplot[gray, dotted, thick] coordinates {(0.3,0) (0.3,0.6)};
+\addplot[gray, dotted, thick] coordinates {(0,0.6) (0.3,0.6)};
+\addplot[only marks, mark=*, mark size=1.8pt, black] coordinates {(0.3,0.6)};
+\addplot[only marks, mark=*, mark size=1.8pt, black, mark options={fill=white}] coordinates {(0.3,0.3)};
+\node[font=\footnotesize, anchor=south east] at (axis cs:0.29,0.61) {$\mu_0/\mu^\star$};
+\node[font=\footnotesize, anchor=west] at (axis cs:0.32,0.27) {verdad total: $\mu_0$};
+\node[font=\footnotesize, anchor=south] at (axis cs:0.75,1.0) {envolvente cóncava};
+\node[font=\footnotesize, anchor=south, text=gray!70!black] at (axis cs:0.16,0.02) {sin señal: $0$};
+\end{axis}
+\end{tikzpicture}
+\caption{Concavificación con $\mu_0=0.3$ y $\mu^\star=0.5$\calib. Maullar con estrategia duplica la probabilidad de cenar respecto de decir siempre la verdad.}\label{fig:concavo}
+\end{figure}
+
+Con $\mu_0=0.3$ y $\mu^\star=0.5$\calib\ (Figura~\ref{fig:concavo}), obtengo $q^\star=3/7$: el gato saciado maúlla el $43$\,\% de las veces y come con probabilidad $0.6$. Si fuera siempre transparente comería con probabilidad $0.3$, y si nunca informara no comería nunca. Esto no es una mentira en sentido técnico: el humano conoce la política y actualiza correctamente, y aun así le sirve. El componente agudo del ronroneo documentado por McComb et al.~\cite{mccomb} sugiere que el gato, además, mueve $\mu^\star$ desde el lado del humano.
+
+\begin{proposicion}[Seis cenas]\label{prop:seis}
+Sean $n$ hogares que juegan independientemente el juego de la cena, sin observarse entre sí, y sea $p=\min\{1,\mu_0/\mu^\star\}$. El número de cenas $D_n$ sigue una ley binomial y $\E[D_n]=np$. Si los hogares comparten un registro de cenas servidas, y por tanto dejan de servir tras la primera, entonces el valor esperado cae a $1-(1-p)^n\le 1$. El desperdicio evitado, $np-1+(1-p)^n$, es no negativo y asintóticamente lineal en $n$.
+\end{proposicion}
+
+\begin{proof}
+La independencia da la binomial. Con registro, se come si y solo si al menos un hogar habría servido. La no negatividad es la desigualdad de Bernoulli.
+\end{proof}
+
+Con $n=6$ y $p=0.6$, se pasa de $3.6$ cenas a $0.9959$. Si $\mu_0\ge\mu^\star$, entonces $p=1$ y $D_6=6$ con certeza, régimen documentado en la literatura infantil~\cite{moore}. El mecanismo correctivo es una pizarra en el refrigerador, y su implementación en la práctica enfrenta el problema de que quien la usa ya sirvió la cena.
+
+\section{La puerta como opción real}\label{sec:puerta}
+
+El gato pide la puerta. Se la abres. Se sienta en el umbral y mira afuera. Esta conducta se considera irracional únicamente porque el análisis estándar omite el valor de esperar~\cite{mcdonaldsiegel,dixitpindyck}.
+
+\begin{definicion}[Problema de la puerta]
+El valor de estar afuera sigue $dX_t=\mu X_t\,dt+\sigma X_t\,dW_t$ con $X_0=x_0>0$. Salir cuesta $I>0$ (el calor que se abandona), es irreversible a efectos del modelo y se descuenta a tasa $r>\mu$. El gato resuelve $V(x)=\sup_\tau\E_x[e^{-r\tau}(X_\tau-I)^+]$. Sea $\beta>1$ la raíz de $\tfrac12\sigma^2\beta(\beta-1)+\mu\beta-r=0$.
+\end{definicion}
+
+\begin{teorema}[Umbral del gato]\label{teo:umbral}
+La política óptima es salir cuando $X_t$ alcanza por primera vez $x^\star=\frac{\beta}{\beta-1}I$, y
+\begin{equation}
+  V(x)=\begin{cases}(x^\star-I)\,(x/x^\star)^{\beta}, & x<x^\star,\\ x-I, & x\ge x^\star.\end{cases}
+\end{equation}
+\end{teorema}
+
+\begin{proof}
+Sea $\mathcal L=\tfrac12\sigma^2x^2\partial_x^2+\mu x\partial_x-r$. Las soluciones de $\mathcal LV=0$ acotadas en $0$ son $Ax^\beta$. Las condiciones de frontera libre, $V(x^\star)=x^\star-I$ y $V'(x^\star)=1$, determinan $A$ y $x^\star$. Falta verificar la desigualdad variacional. En $x<x^\star$, $V$ es convexa, con tangente $x-I$ en $x^\star$, así que $V\ge x-I$. En $x>x^\star$, $\mathcal L(x-I)=(\mu-r)x+rI\le 0$ equivale a $x\ge rI/(r-\mu)$, y $x^\star$ cumple esta cota porque $\mu\beta-r=-\tfrac12\sigma^2\beta(\beta-1)<0$. El lema de Itô concluye.
+\end{proof}
+
+\begin{proposicion}[Por qué protesta si no piensa salir]\label{prop:protesta}
+$V(x)>0$ para todo $x>0$. Cerrar la puerta destruye un activo de valor positivo aunque $x\ll I$, es decir, aunque salir no le convenga en absoluto.
+\end{proposicion}
+
+Esto resuelve la paradoja clásica: el gato no quiere salir, quiere \emph{poder} salir. Al cerrar la puerta le liquidas una opción.
+
+\begin{teorema}[Externalidad]\label{teo:externalidad}
+Si el humano sufre un costo de flujo $c<rI$ mientras sostiene la puerta, el umbral que maximiza el bienestar conjunto es
+\begin{equation}
+  x_S^\star=\frac{\beta}{\beta-1}\Bigl(I-\frac{c}{r}\Bigr)=x^\star-\frac{\beta}{\beta-1}\,\frac{c}{r}.
+\end{equation}
+Dado que el gato no internaliza $c$, sale demasiado tarde, y la brecha es lineal en $c$.
+\end{teorema}
+
+\begin{proof}
+El valor social resuelve $\mathcal LW=c$, con solución $W(x)=Ax^\beta-c/r$. Las condiciones $W(x_S^\star)=x_S^\star-I$ y $W'(x_S^\star)=1$ dan $x_S^\star/\beta-c/r=x_S^\star-I$, y despejo.
+\end{proof}
+
+\begin{teorema}[Tiempo de puerta abierta]\label{teo:tiempo}
+Sea $\tau$ el primer instante en que $X$ alcanza $x^\star$, con $x_0<x^\star$, y sea $\nu=\mu-\sigma^2/2$.
+\begin{enumerate}[label=(\alph*),nosep]
+\item Si $\nu>0$, $\E[\tau]=\ln(x^\star/x_0)/\nu$.
+\item Si $\nu=0$, $\tau<\infty$ casi seguramente, pero $\E[\tau]=\infty$.
+\item Si $\nu<0$, $\P(\tau<\infty)=(x_0/x^\star)^{\,1-2\mu/\sigma^2}<1$, de modo que $\E[\tau]=\infty$.
+\end{enumerate}
+En todo caso, $\E[e^{-r\tau}]=(x_0/x^\star)^\beta$.
+\end{teorema}
+
+\begin{proof}
+$\ln X_t$ es un movimiento browniano con deriva $\nu$, y aplico los resultados clásicos de primer paso. Para (c), con $\theta=1-2\mu/\sigma^2$, el proceso $X_t^{\theta}$ es una martingala, pues $\theta\nu+\tfrac12\theta^2\sigma^2=0$, y aplico muestreo opcional, usando que $X_t\to 0$ en $\{\tau=\infty\}$. La última identidad es muestreo opcional para $e^{-rt}X_t^\beta$.
+\end{proof}
+
+\begin{corolario}[El gato áureo]\label{cor:aureo}
+Sean $\mu=0$ y $\sigma^2=2r$\calib, de modo que el exterior es una martingala cuya volatilidad compensa exactamente la paciencia. Entonces $\beta^2-\beta-1=0$, es decir, $\beta=\varphi=(1+\sqrt5)/2$, y $x^\star=\varphi^2I$. Con $x_0=I$:
+\begin{equation}
+  \P(\text{sale algún día})=\varphi^{-2}\approx 0.382,
+  \qquad
+  \P(\text{nunca sale})=\varphi^{-1}\approx 0.618,
+\end{equation}
+y el valor de la opción es $V(I)=\varphi^{\,1-2\varphi}I\approx 0.341\,I$.
+\end{corolario}
+
+\begin{proof}
+La ecuación característica es $r\beta(\beta-1)-r=0$. Además, $\varphi/(\varphi-1)=\varphi^2$, $1-\varphi^{-2}=\varphi^{-1}$ y $\varphi^2-1=\varphi$. Sustituyo en los teoremas~\ref{teo:umbral} y~\ref{teo:tiempo}.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  revista,
+  xlabel={Valor de estar afuera, $x/I$},
+  ylabel={Valor para el gato, $V/I$},
+  xmin=0, xmax=4,
+  ymin=-0.1, ymax=3.1,
+  xtick={0,1,2.618,4},
+  xticklabels={$0$,$1$,$\varphi^2$,$4$},
+  ytick={0,1.618,3},
+  yticklabels={$0$,$\varphi$,$3$}
+]
+\addplot[gray, dashed] coordinates {(1,0) (4,3)};
+\addplot[gray, dashed] coordinates {(0,0) (1,0)};
+\addplot[black, domain=0:2.618, samples=80] {0.340949*x^1.618034};
+\addplot[black] coordinates {(2.618,1.618) (4,3)};
+\addplot[gray, dotted, thick] coordinates {(2.618,0) (2.618,1.618)};
+\addplot[only marks, mark=*, mark size=1.8pt, black] coordinates {(2.618,1.618)};
+\node[font=\footnotesize, anchor=west] at (axis cs:2.72,1.4) {sale en $x^\star$};
+\node[font=\footnotesize, anchor=north west, text=gray!70!black] at (axis cs:1.55,0.45) {salir ya: $x-I$};
+\node[font=\footnotesize, anchor=south east] at (axis cs:1.3,0.72) {$V$: esperar};
+\end{axis}
+\end{tikzpicture}
+\caption{Valor de la opción en la calibración áurea. $V$ supera siempre al pago inmediato y lo toca tangencialmente en $x^\star$ (pegado suave). La distancia vertical entre ambas curvas es lo que el gato defiende cuando le cierras la puerta.}\label{fig:puerta}
+\end{figure}
+
+Simulé $20\,000$ gatos con corrección de puente browniano y obtuve una fracción de salidas de $0.3820$, contra $\varphi^{-2}=0.38197$. Tomando el minuto como unidad, $r=0.02$\calib, $\sigma^2=0.04$\calib\ y $c/r=I/4$\calib, obtengo $x^\star=2.618\,I$ y $x_S^\star=1.964\,I$ (Figura~\ref{fig:puerta}). El humano paga en valor presente $(c/r)(1-\varphi^{-2\varphi})\approx 0.789\,c/r$ por un servicio que el $61.8$\,\% de las veces termina sin que el gato salga. En tiempo sin descontar, el costo esperado es infinito, resultado que confirmará cualquiera que haya estado de pie sosteniendo una puerta en invierno.
+
+\section{El parche de sol}\label{sec:sol}
+
+El sol se mueve. El gato también, pero solo cuando le sale a cuenta.
+
+\begin{definicion}[Parche de sol]
+Un parche de ancho $W$ se desplaza a velocidad $v$. Un gato a distancia $\delta$ del centro recibe potencia $P(\delta)=R(1-(2\delta/W)^2)$. Moverse cuesta $c$ (lo cual incluye, principalmente, despertar). Un ciclo dura $T$ con $vT\le W$, y el gato elige dónde reinstalarse en cada ciclo.
+\end{definicion}
+
+\begin{teorema}[Intervalo óptimo y valor marginal]\label{teo:sol}
+Es óptimo reinstalarse adelantado, de modo que $\delta$ recorra el intervalo simétrico $[-vT/2,\,vT/2]$. La tasa neta es
+\begin{equation}
+  g(T)=R\Bigl(1-\frac{v^2T^2}{3W^2}\Bigr)-\frac{c}{T},
+\end{equation}
+estrictamente cóncava, con máximo único en
+\begin{equation}
+  T^\star=\Bigl(\frac{3cW^2}{2Rv^2}\Bigr)^{1/3}.
+\end{equation}
+Además, $P(vT^\star/2)=g(T^\star)$: el gato se levanta justo cuando la potencia instantánea cae a su tasa media neta. Es el teorema del valor marginal de Charnov~\cite{charnov}.
+\end{teorema}
+
+\begin{proof}
+Para $T$ fijo, la media de $P$ sobre un intervalo de longitud $vT$ se maximiza centrándolo, porque $P$ es cóncava y simétrica. La integral da $g$. La concavidad en $T>0$ es inmediata, y $g'(T)=0$ da $T^\star$. En el óptimo $c/T^\star=2R(vT^\star)^2/(3W^2)$. Sustituyendo, $g(T^\star)=R(1-(vT^\star/W)^2)=P(vT^\star/2)$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  revista,
+  xlabel={Tiempo entre reubicaciones, $T$ (min)},
+  ylabel={Potencia (W)},
+  xmin=5, xmax=60,
+  ymin=18, ymax=30,
+  xtick={5,25.5,40,60},
+  xticklabels={$5$,$T^\star$,$40$,$60$},
+  ytick={20,24,28.04},
+  yticklabels={$20$,$24$,$28.0$}
+]
+\addplot[black, domain=5:60, samples=100] {30*(1-(0.01*x)^2/3)-33.3333/x};
+\addplot[gray, dashed, domain=5:60, samples=60] {30*(1-(0.01*x)^2)};
+\addplot[gray, dotted, thick] coordinates {(25.54,18) (25.54,28.04)};
+\addplot[only marks, mark=*, mark size=1.8pt, black] coordinates {(25.54,28.04)};
+\node[font=\footnotesize, anchor=south east] at (axis cs:58,27.6) {tasa neta $g(T)$};
+\node[font=\footnotesize, anchor=east, text=gray!70!black] at (axis cs:49,21.5) {potencia al irse};
+\end{axis}
+\end{tikzpicture}
+\caption{Con $v=10^{-4}$\,m/s, $W=60$\,cm, $R=30$\,W y $c=2$\,kJ\calib, el máximo de $g$ cae donde la potencia al irse la cruza. Teorema del valor marginal, ejecutado a $25.5$ minutos.}\label{fig:sol}
+\end{figure}
+
+Numéricamente (Figura~\ref{fig:sol}), $T^\star\approx 25.5$ minutos, durante los cuales el parche avanza $15$\,cm, y $g(T^\star)\approx 28.0$\,W. El exponente $1/3$ es la firma de los problemas de inventario, de modo que el gato gestiona su calor como un almacén gestiona su stock. La ley $T^\star\propto (W/v)^{2/3}$ es una predicción falsable, e invito a contrastarla a quien tenga una ventana, un gato y una tarde libre.
+
+\section{Complejidad computacional}\label{sec:computacional}
+
+Hasta aquí he medido joules. Ahora mido pasos. Una precisión terminológica: llamar \emph{perezoso} al gato siempre fue correcto, pero en el sentido de la evaluación perezosa: no calcula nada hasta que alguien exige el resultado. Estudio tres conflictos clásicos, ordenados por número creciente de gatos.
+
+\subsection{Las 3\,a.\,m.: el gato como adversario adaptativo}
+
+\begin{definicion}[Problema de las 3\,a.\,m.]
+Cada maullido aguantado le cuesta $1$ al humano. Levantarse cuesta un entero $B\ge 2$ y termina el episodio. El humano no sabe cuántos maullidos quedan. La política determinista $j\ge 1$ aguanta $j-1$ maullidos y se levanta con el $j$-ésimo. Si el gato emite $t$ maullidos en total,
+\begin{equation}
+  \costo(j,t)=\begin{cases}t, & t<j,\\ j-1+B, & t\ge j,\end{cases}
+  \qquad
+  \OPT(t)=\min\{t,B\}.
+\end{equation}
+Una política es $\rho$-competitiva si $\E[\costo]\le\rho\,\OPT(t)$ para todo $t$. Este es el problema de \emph{ski rental}, con el esquí sustituido por dormir.
+\end{definicion}
+
+\begin{teorema}[Se calla cuando te levantas]\label{teo:adaptativo}
+La política $j=B$ es $(2-1/B)$-competitiva y ninguna política determinista es mejor. Además, si el gato observa al humano y se calla en cuanto este se levanta, el azar tampoco sirve: toda política aleatoria cumple $\E[\costo]\ge(2-1/B)\,\E[\OPT]$, con $\OPT$ evaluado sobre la noche que efectivamente ocurrió.
+\end{teorema}
+
+\begin{proof}
+Con $j=B$: si $t<B$, el costo es $t=\OPT(t)$; si $t\ge B$, el costo es $2B-1$ y $\OPT(t)=B$. Para la cota inferior, dada $j$, tomo $t=j$. Si $j\le B$, la razón es $1+(B-1)/j\ge 2-1/B$; si $j>B$, es $(j-1+B)/B\ge 2$. Para la segunda parte, sea $M\ge 2B$ y hago que el gato maúlle hasta que el humano se levante o hasta completar $M$ maullidos. Si el humano se levanta con el maullido $j$, aplico lo anterior con $t=j$. Si no se levanta, paga $M$ contra $\OPT=B$, y $M/B\ge 2$. La desigualdad vale en cada realización, y por tanto en esperanza~\cite{bendavid}.
+\end{proof}
+
+\begin{teorema}[Humano con dado, gato distraído]\label{teo:dado}
+Si el gato fija $t$ de antemano, sin observar al humano, la razón competitiva óptima es
+\begin{equation}
+  c_B=\frac{1}{1-(1-1/B)^B},
+\end{equation}
+creciente en $B$, con límite $e/(e-1)\approx 1.582$~\cite{karlin}. Se alcanza levantándose con el maullido $j\in\{1,\dots,B\}$ con probabilidad
+\begin{equation}
+  p_j=\frac{c_B}{B}\Bigl(1-\frac1B\Bigr)^{B-j}.
+\end{equation}
+\end{teorema}
+
+\begin{proof}
+\emph{Cota superior.} La serie geométrica da $\sum_j p_j=1$. Sea $E_t=\sum_j p_j\costo(j,t)$, con $E_0=0$. Para $1\le t\le B$, la definición de costo da
+\begin{equation}
+  E_t-E_{t-1}=Bp_t+\sum_{j>t}p_j=c_B\Bigl(1-\frac1B\Bigr)^{B-t}+c_B\Bigl[1-\Bigl(1-\frac1B\Bigr)^{B-t}\Bigr]=c_B .
+\end{equation}
+Así, $E_t=c_Bt=c_B\OPT(t)$ para $t\le B$, y si $t>B$ el costo ya no cambia: $E_t=E_B=c_BB=c_B\OPT(t)$.
+
+\emph{Cota inferior, por el principio de Yao~\cite{yao}.} Sea $Q_s=(1-1/B)^{s-1}$. Considero la distribución con $\P(t=s)=Q_s/B$ para $1\le s<B$ y el resto de la masa, $Q_B$, en $t=M$, con $M\ge\max\{2B,\,B/Q_B\}$. Entonces $\P(t\ge s)=Q_s$ para $s\le B$. Sea $F(j)=\E[\costo(j,t)]$. Por definición, $F(1)=B$. Si $1\le j<B$,
+\begin{equation}
+  F(j+1)-F(j)=(1-B)\frac{Q_j}{B}+Q_{j+1}=Q_j\Bigl[\frac{1-B}{B}+1-\frac1B\Bigr]=0,
+\end{equation}
+de modo que $F(j)=B$ para $j\le B$. Si $B\le j<M$, el único cambio proviene de $t=M$, que suma $Q_B>0$, así que $F$ crece. Si $j\ge M$, entonces $F(j)\ge Q_BM\ge B$. Por otra parte,
+\begin{equation}
+  \E[\OPT(t)]=\sum_{s=1}^{B}\P(t\ge s)=\sum_{s=1}^{B}Q_s=B\Bigl[1-\Bigl(1-\frac1B\Bigr)^{B}\Bigr]=\frac{B}{c_B}.
+\end{equation}
+Luego toda política determinista cumple $F(j)\ge c_B\E[\OPT(t)]$. Promediando sobre el azar del humano, debe existir un $t$ del soporte con $\E[\costo]\ge c_B\OPT(t)$. La monotonía de $c_B$ sigue de que $(1-1/B)^B$ crece hacia $1/e$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  revista,
+  xlabel={Costo de levantarse, $B$ (en maullidos)},
+  ylabel={Razón competitiva},
+  xmin=2, xmax=30,
+  ymin=1.25, ymax=2.08,
+  xtick={2,10,20,30},
+  ytick={1.333,1.5,1.582,2},
+  yticklabels={$4/3$,$3/2$,$\tfrac{e}{e-1}$,$2$}
+]
+\addplot[gray, dashed] coordinates {(2,2) (30,2)};
+\addplot[gray, dashed] coordinates {(2,1.58198) (30,1.58198)};
+\addplot[black, samples at={2,3,...,30}] {2-1/x};
+\addplot[black, samples at={2,3,...,30}] {1/(1-(1-1/x)^x)};
+\node[font=\footnotesize, anchor=north] at (axis cs:19,1.93) {gato que te mira: $2-1/B$};
+\node[font=\footnotesize, anchor=north] at (axis cs:19,1.55) {gato distraído, humano con dado: $c_B$};
+\end{axis}
+\end{tikzpicture}
+\caption{El valor del azar. Tirar un dado a las 3\,a.\,m. ayuda solo si el gato no está mirando.}\label{fig:noche}
+\end{figure}
+
+Con $B=10$\calib, la mejor política determinista paga $1.9$ veces lo óptimo y la aleatoria $1.535$ (Figura~\ref{fig:noche}), con $p_1\approx 0.060$ y $p_{10}\approx 0.154$: la disposición a rendirse crece geométricamente con cada maullido. La recomendación práctica es tirar un dado, siempre que el gato no te vea tirarlo. El gato te está mirando.
+
+\subsection{¿Dónde está Miko?}
+
+\begin{definicion}[Búsqueda del gato]
+El humano mantiene una lista de $n$ lugares. Si el gato está en la posición $i$, encontrarlo cuesta $i$. Tras encontrarlo, adelantar ese lugar en la lista es gratis; cualquier otro intercambio de adyacentes cuesta $1$. Dada una secuencia $\sigma$ de $m$ escondites, $C_A(\sigma)$ es el costo total de la política $A$. La política \emph{move-to-front} (MTF) consiste en buscar primero donde lo viste la última vez.
+\end{definicion}
+
+\begin{teorema}[Sleator--Tarjan~\cite{sleator}]\label{teo:mtf}
+Para toda política $A$ que parta de la misma lista, incluso una clarividente, $C_{\mathrm{MTF}}(\sigma)\le 2C_A(\sigma)-m$.
+\end{teorema}
+
+\begin{proof}
+Sea el potencial $\Phi$ el número de inversiones entre las listas de MTF y de $A$: los pares de lugares que aparecen en distinto orden. Considero la búsqueda de $x$, en la posición $k$ para MTF y en la $i$ para $A$, y sea $v$ el número de lugares antes de $x$ en MTF pero después de $x$ en $A$. Los otros $k-1-v$ lugares que preceden a $x$ en MTF también lo preceden en $A$, así que $k-1-v\le i-1$. Mover $x$ al frente crea $k-1-v$ inversiones y destruye $v$. El costo amortizado de MTF es entonces
+\begin{equation}
+  k+(k-1-v)-v=2(k-v)-1\le 2i-1.
+\end{equation}
+Con $x$ ya al frente en MTF, los adelantos gratuitos de $x$ en $A$ solo pueden eliminar inversiones, y cada intercambio pagado de $A$ crea a lo sumo una. Sumando sobre $\sigma$, con $\Phi_0=0\le\Phi_{\mathrm{final}}$ y siendo $X$ el número de intercambios pagados, $C_{\mathrm{MTF}}\le\sum(2i-1)+X\le 2C_A-m$.
+\end{proof}
+
+\begin{teorema}[Siempre está en el último lugar donde buscas]\label{teo:ultimo}
+Contra toda política determinista, un gato que se esconde siempre en el último lugar de la lista vigente del humano le impone un costo de $mn$, mientras que alguna política fija cuesta a lo sumo $m(n+1)/2+\binom n2$. La razón tiende a $2-2/(n+1)$ cuando $m\to\infty$.
+\end{teorema}
+
+\begin{proof}
+El costo $mn$ es inmediato. Promediando sobre las $n!$ listas fijas, cada búsqueda cuesta $(n+1)/2$, así que alguna lista cuesta a lo sumo $m(n+1)/2$, y llegar a ella toma a lo sumo $\binom n2$ intercambios.
+\end{proof}
+
+El dicho popular es una tautología, pues uno deja de buscar al encontrar. Lo que añade el teorema es que el último lugar puede ser, además, el peor. Con $n=6$\calib, la razón es $1.714$, y por el Teorema~\ref{teo:mtf} buscar donde lo viste la última vez queda a una distancia de $2/(n+1)$ de lo mejor que permite la teoría para humanos deterministas. El gato conoce tu lista: te ha visto buscar.
+
+\subsection{Colonias: NP-completitud}
+
+\begin{definicion}[Interdicción felina]
+La casa es un grafo $G=(V,E)$. El humano, animal de costumbres, repite rutas fijas $R_1,\dots,R_m$, cada una un camino simple en $G$. Un gato en $v$ bloquea toda ruta que pase por $v$. Para una colonia $S\subseteq V$, sea $b(S)=|\{i:R_i\cap S\ne\varnothing\}|$. El problema \prob{Interdicción} pregunta si existe $S$ con $|S|\le k$ y $b(S)=m$; \prob{Max-Interdicción} maximiza $b(S)$ con $|S|\le k$. Sean $L=\sum_i|R_i|$ y $d=\max_i|R_i|$.
+\end{definicion}
+
+\begin{proposicion}[Un gato es fácil]\label{prop:ungato}
+Para $k=1$, el mejor vértice se halla en tiempo $O(L+|V|)$.
+\end{proposicion}
+
+\begin{proof}
+Basta contar, en una pasada por las rutas, cuántas contienen a cada vértice.
+\end{proof}
+
+\begin{teorema}[Una colonia es difícil]\label{teo:npc}
+\prob{Interdicción} es NP-completo. Además, salvo que $\mathrm{P}=\mathrm{NP}$, para todo $\epsilon>0$ ningún algoritmo polinomial aproxima \prob{Max-Interdicción} con factor $1-1/e+\epsilon$.
+\end{teorema}
+
+\begin{proof}
+Dada $S$, verifico $b(S)=m$ en tiempo $O(L)$, así que el problema está en NP. Reduzco desde \prob{Cobertura de Vértices}~\cite{karp}: dado $(G,k)$, cada arista $\{u,v\}$ se convierte en la ruta $(u,v)$. Una colonia bloquea todas las rutas si y solo si toca todas las aristas.
+
+Para la inaproximabilidad, sea una instancia de \prob{Max-$k$-Cobertura} con conjuntos $A_1,\dots,A_N$ sobre un universo $U$, cuyos elementos pertenecen a algún conjunto. Tomo como casa el grafo completo sobre $\{1,\dots,N\}$, un plano abierto, y por cada $u\in U$ una ruta que recorra $\{i:u\in A_i\}$ en cualquier orden, lo cual es un camino simple. Entonces $b(S)$ es exactamente la cobertura de $S$, y aplico el umbral de Feige~\cite{feige}.
+\end{proof}
+
+\begin{teorema}[La colonia voraz]\label{teo:voraz}
+Colocar cada gato, por turnos, donde bloquee más rutas nuevas toma tiempo $O(k(L+|V|))$ y cumple
+\begin{equation}
+  b(S_{\mathrm{voraz}})\ge\Bigl[1-\Bigl(1-\frac1k\Bigr)^{k}\Bigr]\OPT>\Bigl(1-\frac1e\Bigr)\OPT.
+\end{equation}
+Por el Teorema~\ref{teo:npc}, ningún algoritmo polinomial mejora esta constante asintóticamente, salvo que $\mathrm{P}=\mathrm{NP}$.
+\end{teorema}
+
+\begin{proof}
+Sea $a_i$ el número de rutas bloqueadas tras $i$ gatos. Los $k$ vértices del óptimo bloquean al menos $\OPT-a_i$ rutas todavía libres, de modo que, por el principio del palomar, alguno bloquea al menos $(\OPT-a_i)/k$. Por tanto, $\OPT-a_{i+1}\le(1-1/k)(\OPT-a_i)$, e itero desde $a_0=0$~\cite{nemhauser}. Cada turno es una pasada de conteo.
+\end{proof}
+
+\begin{teorema}[Rutas cortas, pocos gatos]\label{teo:fpt}
+\prob{Interdicción} se decide en tiempo $O(d^{\,k}L)$ para $d\ge 2$. En particular, es tratable por parámetro fijo en $k+d$.
+\end{teorema}
+
+\begin{proof}
+Tomo una ruta libre. Toda solución debe colocar un gato en alguno de sus, a lo sumo, $d$ vértices, así que ramifico sobre ellos y resuelvo con $k-1$ gatos sobre las rutas restantes. Si $T(k)$ es el tiempo, $T(k)\le d\,T(k-1)+O(dL)$, con $T(0)=O(L)$, y esta recurrencia da $T(k)=O(d^{\,k}L)$, pues la suma geométrica la domina el último nivel.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\caption{Resumen de resultados algorítmicos.}\label{tab:algoritmos}
+\begin{tabular}{lll}
+\toprule
+Situación & Problema & Resultado \\
+\midrule
+3\,a.\,m., gato que observa & \emph{ski rental} & $2-1/B$, exacto \\
+3\,a.\,m., gato distraído & \emph{ski rental} aleatorio & $c_B\to e/(e-1)$, exacto \\
+Buscar al gato & \emph{list update} & $\le 2$; $\ge 2-2/(n+1)$ \\
+Un gato bloqueando & conteo & $O(L+|V|)$ \\
+$k$ gatos, bloqueo total & cobertura & NP-completo \\
+$k$ gatos, aproximado & voraz & $1-1/e$, umbral \\
+$k$ gatos, rutas cortas & árbol de búsqueda & $O(d^{\,k}L)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{observacion}[La misma constante]
+El factor del Teorema~\ref{teo:voraz} con $k=B$ es exactamente $1/c_B$: la expresión $1-(1-1/x)^x$ gobierna tanto lo que una colonia voraz logra como lo que un humano con dado paga. No afirmo aquí ninguna dualidad; solo dejo constancia de que el número $e$ también tiene gato.
+\end{observacion}
+
+\begin{observacion}[Sobre P contra NP]
+Si $\mathrm{P}=\mathrm{NP}$, podría calcular en tiempo polinomial la colonia óptima. Queda abierto el problema, más difícil, de conseguir que los gatos se coloquen en ella.
+\end{observacion}
+
+\section{Resultados menores}\label{sec:menores}
+
+\begin{proposicion}[El vaso]\label{prop:vaso}
+Empujar un objeto de masa $m$ una distancia $d$ hasta el borde con fricción $\mu_f$ cuesta $\mu_f mgd$ y libera $mgh$ al caer desde la altura $h$. La ganancia energética
+\begin{equation}
+  \mathcal A=\frac{h}{\mu_f d}
+\end{equation}
+no depende de $m$.
+\end{proposicion}
+
+Con $h=75$\,cm, $\mu_f=0.3$ y $d=5$\,cm\calib, la ganancia es $\mathcal A=50$. Pocas inversiones de capital rinden tanto, y como la ganancia es independiente de la masa, el gato puede elegir el objeto únicamente según el grito esperado del humano. Esa es, sin duda, la variable que maximiza.
+
+\begin{proposicion}[Lengüeteo, Reis et al.~\cite{reis}]\label{prop:lengua}
+Sea $\mathrm{Fr}^{*}=(R/H)\,\mathrm{Fr}^{2/3}$, con $\mathrm{Fr}=U/\sqrt{gR}$, donde $U$ es la velocidad máxima de la lengua, $R$ su radio y $H$ la altura de lengüeteo. Si la frecuencia se ajusta para que la boca se cierre al colapsar la columna, $\mathrm{Fr}^{*}$ es de orden uno, y si la familia es isométrica, entonces $f\sim M^{-1/6}$.
+\end{proposicion}
+
+Esta derivación es de Reis et al., no mía. Con sus valores ($U=78$\,cm/s, $H=3$\,cm, $R\approx 5$\,mm) obtengo $\mathrm{Fr}^{*}\approx 0.39$. Su ajuste en ocho especies de felinos da $f=4.6\,M^{-0.181\pm 0.024}$, compatible con $-1/6$; a $4$\,kg predice $3.58$\,s$^{-1}$, contra los $3.5\pm0.4$\,s$^{-1}$ medidos. Un tigre y un gato de departamento obedecen al mismo número adimensional sin haberlo consultado.
+
+\begin{proposicion}[La esfera y el teclado]\label{prop:esfera}
+Entre todos los cuerpos de volumen $V$, la esfera minimiza la superficie: $A\ge(36\pi)^{1/3}V^{2/3}$. Si la pérdida de calor es $hA(T_b-T_a)$ y el metabolismo es $M$, sin otras fuentes el gato solo puede equilibrar en el rango $T_a\ge T_b-M/(hA_{\text{esfera}})$. Por debajo, el déficit de una esfera es $hA_{\text{esfera}}(T_b-T_a)-M>0$.
+\end{proposicion}
+
+Un gato de $4$\,kg con densidad del agua\calib\ tiene una esfera de $9.85$\,cm de radio y $A=0.122$\,m$^2$, frente a los $0.168$\,m$^2$ de un cilindro estirado de $45$\,cm\calib: enrollarse ahorra un $27.5$\,\% de superficie. La fórmula veterinaria $70\,M^{0.75}$ da $M\approx 9.6$\,W. Calibro $h\approx 9.3$\,W\,m$^{-2}$K$^{-1}$ haciendo coincidir el borde inferior con los $30\,^\circ$C de la zona termoneutra reportada de $30$ a $38\,^\circ$C~\cite{nrc}, con $T_b=38.5\,^\circ$C\calib.
+
+El modelo predice entonces que el gato pasa de esfera a cilindro entre $30$ y $32.3\,^\circ$C. Y lo más importante: en una habitación a $20\,^\circ$C, el gato enrollado arrastra un déficit de $11.3$\,W, justo el orden de magnitud de lo que disipa una computadora portátil. Por tanto, sentarse sobre tu teclado no es un acto de sabotaje, sino la solución de un balance térmico que además, como efecto secundario sin costo, captura toda tu atención. El punto es Pareto-óptimo, y tu productividad no figura entre sus objetivos.
+
+\section{Problemas abiertos}\label{sec:abiertos}
+
+\begin{conjetura}[Recolección de basura nocturna]
+Todo gato doméstico recorre la casa a velocidad máxima durante algún intervalo cercano a las 3\,a.\,m., y este proceso cumple la función de una recolección de basura sobre un estado interno no observable. No conozco demostración, aunque en el intento se ha sacrificado mucho sueño humano.
+\end{conjetura}
+
+\begin{problema}[Regalo contra caja]
+Sean $G$ un regalo de precio arbitrario y $B$ la caja en la que vino. Demuéstrese que $u(B)>u(G)$ para todo $G$, o constrúyase un contraejemplo. Vinke et al.~\cite{vinke} y Smith et al.~\cite{smith} sugieren que el efecto persiste incluso en el caso límite en que $B$ se dibuja en el piso.
+\end{problema}
+
+\begin{problema}[Índice de Gittins del vaso]
+Calcular el índice de Gittins de cada objeto de la mesa como brazo de un bandido cuya recompensa es la reacción del humano. La política óptima, conocida experimentalmente, empieza por el más caro.
+\end{problema}
+
+\begin{problema}[Caso no abeliano]
+Extender las cotas del \S\ref{sec:caida} al modelo de Kane y Scher, con grupo $SO(3)$. Esto parece factible. Hacer que el gato coopere con la validación experimental, no.
+\end{problema}
+
+\section{Conclusión}
+
+He mostrado que un conjunto de conductas consideradas caprichosas (la mirada fija, el maullido tras la cena, el concierto de las 3\,a.\,m., la puerta no cruzada, la mudanza al sol, el vaso en el suelo, el teclado ocupado) admite una descripción como soluciones a problemas de optimización bien planteados, y en varios casos alcanza cotas exactas. El título de experto no es retórico: el gato opera sobre la frontera de lo posible, en condiciones de información incompleta y sin haber leído nada de esto.
+
+La pregunta natural es si el gato sabe lo que hace. Por los teoremas anteriores, la pregunta es irrelevante para el resultado, y, por la Proposición~\ref{prop:noComputable}, posiblemente imposible de contestar. Dejo al lector decidir qué tan cómodo se siente al respecto, preferentemente mientras le abre la puerta a alguien.
+
+\bigskip
+\noindent\textbf{Declaraciones.} \emph{Datos y código:} todos los números de este trabajo se pueden reproducir con mi programa \texttt{revision\_por\_patas.py}, disponible junto al código fuente en \href{https://github.com/stiffis/complejidad-gatuna}{\nolinkurl{github.com/stiffis/complejidad-gatuna}}. \emph{Ética:} no dejé caer a ningún gato para este estudio, Miko incluido; tampoco pedí consentimiento, porque ya conocía el resultado. \emph{Conflicto de intereses:} soy, en el sentido de la Definición~\ref{def:sistema}, un humano, y en concreto el humano de Miko.
+
+\medskip
+\noindent\textbf{Agradecimientos.} Le agradezco a Miko, mi gato, por inspirar este trabajo. Miko no ha leído el manuscrito ni espero que lo haga.
+
+\begin{thebibliography}{99}
+\small
+\bibitem{banchoffpohl} T.~Banchoff y W.~F.~Pohl. A generalization of the isoperimetric inequality. \emph{J.\ Differential Geometry} 6 (1971), 175--192.
+\bibitem{bendavid} S.~Ben-David, A.~Borodin, R.~Karp, G.~Tardos y A.~Wigderson. On the power of randomization in on-line algorithms. \emph{Algorithmica} 11 (1994), 2--14.
+\bibitem{charnov} E.~L.~Charnov. Optimal foraging, the marginal value theorem. \emph{Theoretical Population Biology} 9(2) (1976), 129--136.
+\bibitem{delgado} M.~M.~Delgado, B.~S.~G.~Han y M.~J.~Bain. Domestic cats (\emph{Felis catus}) prefer freely available food over food that requires effort. \emph{Animal Cognition} (2021). doi:10.1007/s10071-021-01530-3.
+\bibitem{dixitpindyck} A.~K.~Dixit y R.~S.~Pindyck. \emph{Investment under Uncertainty}. Princeton University Press, 1994.
+\bibitem{fardin} M.-A.~Fardin. On the rheology of cats. \emph{Rheology Bulletin} 83(2) (2014), 16--17 y 30.
+\bibitem{feige} U.~Feige. A threshold of $\ln n$ for approximating set cover. \emph{Journal of the ACM} 45(4) (1998), 634--652.
+\bibitem{kamenica} E.~Kamenica y M.~Gentzkow. Bayesian persuasion. \emph{American Economic Review} 101(6) (2011), 2590--2615.
+\bibitem{kanescher} T.~R.~Kane y M.~P.~Scher. A dynamical explanation of the falling cat phenomenon. \emph{International Journal of Solids and Structures} 5 (1969), 663--670.
+\bibitem{karlin} A.~R.~Karlin, M.~S.~Manasse, L.~A.~McGeoch y S.~Owicki. Competitive randomized algorithms for nonuniform problems. \emph{Algorithmica} 11(6) (1994), 542--571.
+\bibitem{karp} R.~M.~Karp. Reducibility among combinatorial problems. En R.~E.~Miller y J.~W.~Thatcher (eds.), \emph{Complexity of Computer Computations}. Plenum Press (1972), 85--103.
+\bibitem{kolmogorov} A.~N.~Kolmogorov. Three approaches to the quantitative definition of information. \emph{Problems of Information Transmission} 1(1) (1965), 1--7.
+\bibitem{livitanyi} M.~Li y P.~Vitányi. \emph{An Introduction to Kolmogorov Complexity and Its Applications}. Springer.
+\bibitem{marey} É.-J.~Marey. Des mouvements que certains animaux exécutent pour retomber sur leurs pieds, lorsqu'ils sont précipités d'un lieu élevé. \emph{Comptes Rendus de l'Académie des Sciences} 119 (1894), 714--717.
+\bibitem{marey-nature} Photographs of a tumbling cat. \emph{Nature} 51 (1894), 80--81.
+\bibitem{mccomb} K.~McComb, A.~M.~Taylor, C.~Wilson y B.~D.~Charlton. The cry embedded within the purr. \emph{Current Biology} 19(13) (2009), R507--R508.
+\bibitem{mcdonaldsiegel} R.~McDonald y D.~Siegel. The value of waiting to invest. \emph{Quarterly Journal of Economics} 101(4) (1986), 707--727.
+\bibitem{montgomery} R.~Montgomery. Gauge theory of the falling cat. En M.~J.~Enos (ed.), \emph{Dynamics and Control of Mechanical Systems: The Falling Cat and Related Problems}. Fields Institute Communications 1, AMS (1993), 193--218.
+\bibitem{moore} I.~Moore. \emph{Six-Dinner Sid}. 1990. Libro ilustrado; caso de estudio con $n=6$.
+\bibitem{nemhauser} G.~L.~Nemhauser, L.~A.~Wolsey y M.~L.~Fisher. An analysis of approximations for maximizing submodular set functions, I. \emph{Mathematical Programming} 14 (1978), 265--294.
+\bibitem{nrc} National Research Council. \emph{Nutrient Requirements of Dogs and Cats}. National Academies Press, 2006.
+\bibitem{reis} P.~M.~Reis, S.~Jung, J.~M.~Aristoff y R.~Stocker. How cats lap: water uptake by \emph{Felis catus}. \emph{Science} 330 (2010), 1231--1234. doi:10.1126/science.1195421.
+\bibitem{saito} A.~Saito, K.~Shinozuka, Y.~Ito y T.~Hasegawa. Domestic cats (\emph{Felis catus}) discriminate their names from other words. \emph{Scientific Reports} 9 (2019), 5394. doi:10.1038/s41598-019-40616-4.
+\bibitem{shannon} C.~E.~Shannon. A mathematical theory of communication. \emph{Bell System Technical Journal} 27 (1948), 379--423 y 623--656.
+\bibitem{sleator} D.~D.~Sleator y R.~E.~Tarjan. Amortized efficiency of list update and paging rules. \emph{Communications of the ACM} 28(2) (1985), 202--208.
+\bibitem{smith} G.~E.~Smith, P.~A.~Chouinard y S.-E.~Byosiere. If I fits I sits: a citizen science investigation into illusory contour susceptibility in domestic cats (\emph{Felis silvestris catus}). \emph{Applied Animal Behaviour Science} 240 (2021), 105338.
+\bibitem{vinke} C.~M.~Vinke, L.~M.~Godijn y W.~J.~R.~van der Leij. Will a hiding box provide stress reduction for shelter cats? \emph{Applied Animal Behaviour Science} 160 (2014), 86--93.
+\bibitem{yao} A.~C.-C.~Yao. Probabilistic computations: toward a unified measure of complexity. \emph{Proc.\ 18th IEEE Symposium on Foundations of Computer Science} (1977), 222--227.
+\end{thebibliography}
+
+\end{document}
