@@ -4,8 +4,8 @@
 
 Un paper de 15 páginas, escrito como si fuera en serio, que demuestra que el gato no evita el trabajo: lo externaliza. Es una parodia, pero los teoremas tienen demostración. Lo caricaturesco son los modelos.
 
-- 📄 [`paper.pdf`](paper.pdf), en español
-- 📄 [`paper_en.pdf`](paper_en.pdf), *On Feline Complexity*, en inglés
+- [`paper.pdf`](paper.pdf), en español
+- [`paper_en.pdf`](paper_en.pdf), *On Feline Complexity*, en inglés
 
 ## Qué se demuestra
 
